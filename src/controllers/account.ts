@@ -6,6 +6,7 @@ import { AccountRole } from '../types';
 import { OFFICE_ROLES } from '../middlewares';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } from '../config';
+import { Op } from 'sequelize';
 
 /**
  * @brief Schema for validating profile update requests.
@@ -169,14 +170,25 @@ class AccountController {
       // Ensure the user has the required role to access this endpoint
       let attributes = ['firstname', 'lastname', 'role'];
 
-      if (OFFICE_ROLES.includes(req.user?.role as AccountRole)) {
+      const isOfficeRole = OFFICE_ROLES.includes(req.user?.role as AccountRole);
+
+      if (isOfficeRole) {
         attributes.push('email');
         attributes.push('updated_at');
         attributes.push('created_at');
       }
 
       // Fetch all accounts with specified attributes
-      const accounts = await Account.findAll({ attributes });
+      const accounts = await Account.findAll({
+        attributes,
+        where: isOfficeRole
+          ? {}
+          : {
+              role: {
+                [Op.not]: AccountRole.GUEST
+              }
+            }
+      });
 
       res.status(200).json(accounts.map((account) => account.dataValues));
     } catch (error) {
