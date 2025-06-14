@@ -10,18 +10,18 @@ import { JWT_SECRET, JWT_EXPIRES_IN, SALT_ROUNDS } from '../config';
  * @brief Validates the user registration data.
  */
 const REGISTER_SCHEMA = Joi.object({
-  firstname: Joi.string().min(2).max(50).required(),
-  lastname: Joi.string().min(2).max(50).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  firstname: Joi.string().trim().min(2).max(50).required(),
+  lastname: Joi.string().trim().min(2).max(50).required(),
+  email: Joi.string().trim().email().required(),
+  password: Joi.string().trim().min(6).required()
 });
 
 /**
  * @brief Validates the user login credentials.
  */
 const LOGIN_SCHEMA = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  email: Joi.string().trim().email().required(),
+  password: Joi.string().trim().min(6).required()
 });
 
 class AuthController {
@@ -137,8 +137,8 @@ class AuthController {
 
       // Create new account
       const account = await Account.create({
-        firstname: firstname.toUpperCase(),
-        lastname: lastname.toUpperCase(),
+        firstname: firstname.trim().toUpperCase(),
+        lastname: lastname.trim().toUpperCase(),
         email,
         hashed_password,
         salt,
