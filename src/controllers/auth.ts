@@ -1,52 +1,102 @@
 import { Request, Response } from 'express';
-import { compareSync, genSaltSync, hashSync } from 'bcrypt';
+import { genSaltSync, hashSync } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import { Account } from '../models';
 import { AccountRole } from '../types';
+import { JWT_SECRET, JWT_EXPIRES_IN, SALT_ROUNDS } from '../config';
 
-// JWT secret - in production, use environment variable
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS || '10', 10);
+/**
+ * @brief Validates the user registration data.
+ */
+const REGISTER_SCHEMA = Joi.object({
+  firstname: Joi.string().min(2).max(50).required(),
+  lastname: Joi.string().min(2).max(50).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required()
+});
+
+/**
+ * @brief Validates the user login credentials.
+ */
+const LOGIN_SCHEMA = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required()
+});
 
 class AuthController {
-  /**
-   * @brief Validates the user registration data.
-   */
-  private REGISTER_SCHEMA = Joi.object({
-    firstname: Joi.string().min(2).max(50).required(),
-    lastname: Joi.string().min(2).max(50).required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
-  });
-
-  /**
-   * @brief Validates the user login credentials.
-   */
-  private LOGIN_SCHEMA = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
-  });
-
-  /**
-   * @brief Generates a JWT token for the user.
-   * @param id - The user's ID.
-   * @param email - The user's email.
-   * @param role - The user's role.
-   * @returns A JWT token as a string.
-   */
-  private generateToken(id: number, email: string, role: AccountRole): string {
-    const payload = { id, email, role };
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
-  }
-
   /**
    * @brief Logs in a user.
    * @param req - The request object containing user credentials.
    * @param res - The response object used to send the result.
    */
-  public async login(req: Request, res: Response) {}
+  public async login(req: Request, res: Response) {
+    try {
+      // Validate request body
+      const { error, value } = LOGIN_SCHEMA.validate(req.body);
+      if (error) {
+        res.status(400).json({
+          status: 400,
+          message: 'Validation error',
+          errors: error.details.map((detail) => detail.message)
+        });
+        return;
+      }
+
+      // Destructure validated value
+      const { email, password } = value;
+
+      // Find account by email
+      const account = await Account.findOne({ where: { email } });
+      if (!account) {
+        res.status(401).json({
+          status: 401,
+          message: 'Invalid email or password'
+        });
+        return;
+      }
+
+      // Verify password
+      const hashedPassword = hashSync(password, account.salt);
+      if (hashedPassword !== account.hashed_password) {
+        res.status(401).json({
+          status: 401,
+          message: 'Invalid email or password'
+        });
+        return;
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        {
+          id: account.id,
+          email: account.email,
+          role: account.role
+        },
+        JWT_SECRET,
+        {
+          expiresIn: JWT_EXPIRES_IN
+        } as jwt.SignOptions
+      );
+
+      res.status(200).json({
+        token,
+        account: {
+          firstname: account.firstname,
+          lastname: account.lastname,
+          email: account.email,
+          role: account.role,
+          created_at: account.created_at
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
+        status: 500,
+        message: 'Internal server error'
+      });
+    }
+  }
 
   /**
    * @brief Registers a new user.
@@ -56,7 +106,7 @@ class AuthController {
   public async register(req: Request, res: Response) {
     try {
       // Validate request body
-      const { error, value } = this.REGISTER_SCHEMA.validate(req.body);
+      const { error, value } = REGISTER_SCHEMA.validate(req.body);
       if (error) {
         res.status(400).json({
           status: 400,
@@ -85,8 +135,8 @@ class AuthController {
 
       // Create new account
       const account = await Account.create({
-        firstname,
-        lastname,
+        firstname: firstname.toUpperCase(),
+        lastname: lastname.toUpperCase(),
         email,
         hashed_password,
         salt,
@@ -94,14 +144,23 @@ class AuthController {
       });
 
       // Generate JWT token
-      const token = this.generateToken(account.id, account.email, account.role);
+      const token = jwt.sign(
+        {
+          id: account.id,
+          email: account.email,
+          role: account.role
+        },
+        JWT_SECRET,
+        {
+          expiresIn: JWT_EXPIRES_IN
+        } as jwt.SignOptions
+      );
 
       res.status(201).json({
         token,
         account: {
-          id: account.id,
-          firstname: account.firstname.toUpperCase(),
-          lastname: account.lastname.toUpperCase(),
+          firstname: account.firstname,
+          lastname: account.lastname,
           email: account.email,
           role: account.role,
           created_at: account.created_at
