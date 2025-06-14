@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import routes from './routes';
 
 const PORT = process.env.PORT || 3000;
 
@@ -13,9 +14,7 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 200, message: 'Hello World' });
-});
+app.use('/', routes);
 
 export async function startServer(): Promise<void> {
   return new Promise((resolve, rejects) => {
