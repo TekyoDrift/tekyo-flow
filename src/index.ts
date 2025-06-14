@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { sequelize } from './config';
 import { startServer } from './server';
+import './models';
 
 config();
 
@@ -20,5 +21,4 @@ async function main() {
   }
 }
 
-main()
-  .catch(() => process.exit(1));
+main().catch(() => process.exit(1));
