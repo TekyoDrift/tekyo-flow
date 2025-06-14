@@ -4,7 +4,8 @@
   "description": "Tekyo flow is a simple system to manage the flow of the TekyoDrift association.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx tsx src/index.ts",
+    "build": "npx tsc --project tsconfig.json"
   },
   "repository": {
     "type": "git",
