@@ -79,6 +79,8 @@ class AuthController {
         } as jwt.SignOptions
       );
 
+      res.setHeader('Authorization', `Bearer ${token}`);
+
       res.status(200).json({
         token,
         account: {
@@ -155,6 +157,8 @@ class AuthController {
           expiresIn: JWT_EXPIRES_IN
         } as jwt.SignOptions
       );
+
+      res.setHeader('Authorization', `Bearer ${token}`);
 
       res.status(201).json({
         token,

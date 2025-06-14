@@ -9,6 +9,11 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const server = createServer(app);
 
+app.use((_, res, next) => {
+  res.removeHeader('X-Powered-By');
+  next();
+});
+
 app.use(cors({ origin: '*' }));
 app.use(express.static('public'));
 app.use(bodyParser.json());
