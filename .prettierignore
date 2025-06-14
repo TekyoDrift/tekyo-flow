@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+release/
+dist/
+build/
+out/
+logs/
+docs/
+
+# Miscs
+package-lock.json
