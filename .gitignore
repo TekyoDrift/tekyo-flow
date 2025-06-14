@@ -1,0 +1,21 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Database files
+*.sqlite
+*.db
+
+# Build output
+dist/
+release/
+
+# Logs and temporary files
+temp/
+logs/
+
+# IDE and Editor specific files
+.vscode/
+.idea/
