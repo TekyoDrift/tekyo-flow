@@ -1,8 +1,6 @@
 'use client';
 
 import { useAuth } from '@/components/auth-provider';
-import DashboardPage from './dashboard/page';
-import LoginPage from './login/page';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 

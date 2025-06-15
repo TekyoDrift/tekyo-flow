@@ -20,11 +20,6 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve Next.js static files
-app.use('/_next', express.static(path.join(__dirname, '../client/.next')));
-app.use(express.static(path.join(__dirname, '../client/public')));
-app.use(express.static(path.join(__dirname, '../client/.next/server/app')));
-
 // API routes
 app.use('/api', routes);
 
