@@ -14,7 +14,7 @@ import data from './data.json';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   useEffect(() => {
     if (!user) {
