@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "npx tsx src/index.ts",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "npx tsc --project tsconfig.json",
+    "build:client": "cd client && npm run build",
     "dev": "concurrently \"npm run start\" \"cd client && npm run dev\"",
     "dev:client": "cd client && npm run dev",
     "dev:server": "npm run start"
