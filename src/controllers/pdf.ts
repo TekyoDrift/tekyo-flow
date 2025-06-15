@@ -81,6 +81,12 @@ class HtmlToPdfConverter {
     return processedHtml;
   }
 
+  public getTemplatedHtml(inputHtmlPath: string, variables: TemplateVariables): Promise<string> {
+    return fs.readFile(inputHtmlPath, 'utf-8').then((htmlContent) => {
+      return this.replaceTemplateVariables(htmlContent, variables);
+    });
+  }
+
   async convertToPdf(options: PdfOptions): Promise<void> {
     if (!this.browser) {
       throw new Error('Browser not initialized. Call initialize() first.');
@@ -242,6 +248,61 @@ class PDFController {
   }
 
   /**
+   * @brief Fetches the base template for a budget request.
+   * @param req - The request object containing the budget request data.
+   * @param res - The response object to send the HTML template.
+   * @throws Will throw an error if the template fetching fails.
+   */
+  async getBaseTemplate(req: Request, res: Response) {
+    try {
+      // Validate the request query against the schema
+      const { error, value } = BUDGET_REQUEST_SCHEMA.validate(req.query);
+      if (error) {
+        res.status(400).json({
+          status: 400,
+          message: 'Validation error',
+          details: error.details.map((detail) => detail.message)
+        });
+        return;
+      }
+
+      // Get the user from the request (assuming user is set in middleware)
+      const account = await Account.findByPk(req.user?.id);
+
+      // Check if the account exists
+      if (!account) {
+        res.status(404).json({
+          status: 404,
+          message: 'Account not found'
+        });
+        return;
+      }
+
+      const templatePath = './templates/budget-template.html';
+      const templateContent = await htmlToPdfConverter.getTemplatedHtml(templatePath, {
+        ITEM_NAME: value.name,
+        ITEM_DESCRIPTION: value.description,
+        ITEM_QUANTITY: value.quantity,
+        PRICE_PER_UNIT: value.price_per_unit,
+        TOTAL_PRICE: (value.quantity * value.price_per_unit).toFixed(2),
+        ITEM_LINK: value.link,
+        ITEM_IMAGE: value.image,
+        CONTACT_NAME: `${account.firstname} ${account.lastname}`,
+        CONTACT_EMAIL: account.email,
+        CONTACT_ROLE: account.role
+      });
+
+      res.status(200).send(templateContent);
+    } catch (error) {
+      console.error('Error fetching base template:', error);
+      res.status(500).json({
+        status: 500,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  /**
    * @brief Downloads a PDF file by its filename.
    * @param req - The request object containing the filename in the URL parameters.
    * @param res - The response object to send the PDF file.
@@ -288,6 +349,27 @@ class PDFController {
       });
     } catch (error) {
       console.error('Error downloading PDF:', error);
+      res.status(500).json({
+        status: 500,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  async listAllPdfs(req: Request, res: Response) {
+    try {
+      const pdfsDir = './pdfs';
+      const files = await fs.readdir(pdfsDir);
+
+      // Filter for PDF files
+      const pdfFiles = files.filter((file) => file.endsWith('.pdf'));
+
+      res.status(200).json({
+        status: 200,
+        pdfs: pdfFiles
+      });
+    } catch (error) {
+      console.error('Error listing PDFs:', error);
       res.status(500).json({
         status: 500,
         message: 'Internal server error'
