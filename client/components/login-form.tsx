@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { GalleryVerticalEnd } from 'lucide-react';
+import { IconInnerShadowTop } from '@tabler/icons-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -105,7 +105,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
           <div className='flex flex-col items-center gap-2'>
             <a href='#' className='flex flex-col items-center gap-2 font-medium'>
               <div className='flex size-8 items-center justify-center rounded-md'>
-                <GalleryVerticalEnd className='size-6' />
+                <IconInnerShadowTop className='size-6' />
               </div>
               <span className='sr-only'>Tekyo Flow</span>
             </a>
