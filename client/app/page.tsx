@@ -3,9 +3,22 @@
 import { useAuth } from '@/components/auth-provider';
 import DashboardPage from './dashboard/page';
 import LoginPage from './login/page';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const router = useRouter();
   const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        router.replace('/dashboard');
+      }
+    }
+  }, [user, router, isLoading]);
 
   if (isLoading) {
     return (
@@ -15,5 +28,5 @@ export default function Home() {
     );
   }
 
-  return user ? <DashboardPage /> : <LoginPage />;
+  return null;
 }

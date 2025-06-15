@@ -1,13 +1,31 @@
+'use client';
+
 import { AppSidebar } from '@/components/app-sidebar';
 import { ChartAreaInteractive } from '@/components/chart-area-interactive';
 import { DataTable } from '@/components/data-table';
 import { SectionCards } from '@/components/section-cards';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/auth-provider';
+import { useEffect } from 'react';
 
 import data from './data.json';
 
-export default function Page() {
+export default function DashboardPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/login');
+    }
+  }, [user, router]);
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <SidebarProvider
       style={
