@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuth } from '@/components/auth-provider';
-import Dashboard from './dashboard/page';
-import Login from './login/page';
+import DashboardPage from './dashboard/page';
+import LoginPage from './login/page';
 
 export default function Home() {
   const { user, isLoading } = useAuth();
@@ -15,5 +15,5 @@ export default function Home() {
     );
   }
 
-  return user ? <Dashboard /> : <Login />;
+  return user ? <DashboardPage /> : <LoginPage />;
 }
