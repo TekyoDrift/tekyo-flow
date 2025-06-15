@@ -1,10 +1,11 @@
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/components/auth-provider';
 import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'TekyoDrift - Flow',
-  description: 'Manage your Flow accounts and assets for TekyoDrift',
+  description: 'Manage your Flow accounts and assets for TekyoDrift'
 };
 
 export default function RootLayout({
@@ -17,7 +18,7 @@ export default function RootLayout({
       <head />
       <body>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
       </body>
     </html>
